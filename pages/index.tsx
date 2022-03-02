@@ -5,11 +5,12 @@ import btnStyles from "../styles/Button.module.css";
 import MetaTags from "../components/meta";
 import axios from "axios";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import TheToggle from "../components/theToggle";
 
 const Home: NextPage = () => {
+  const seconds = useRef(8);
   const { data: session } = useSession();
   const [dbUser, setDbUser] = useState<{ coins: number; email: string }>();
   const [gif, setGif] =
@@ -84,7 +85,7 @@ const Home: NextPage = () => {
               checked={toggleState}
               handleCheck={getImage}
               handleComplete={toggle}
-              toggleTime={15000}
+              toggleTime={seconds.current * 1000}
             />
           </div>
         )}
