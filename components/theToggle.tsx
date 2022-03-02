@@ -80,6 +80,7 @@ export default class TheToggle extends Component<any, any> {
               onChange={this.props.handleCheck}
               checked={this.props.checked}
               className={styles.input}
+              disabled={this.props.checked}
             />
             <div className={styles["ht-ui-check"]}>
               <div className={styles.track}>
