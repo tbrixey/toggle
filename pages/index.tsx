@@ -1,14 +1,20 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
+import btnStyles from "../styles/Button.module.css";
 import MetaTags from "../components/meta";
 import axios from "axios";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
+import Image from "next/image";
+import TheToggle from "../components/theToggle";
 
 const Home: NextPage = () => {
   const { data: session } = useSession();
   const [dbUser, setDbUser] = useState<{ coins: number; email: string }>();
+  const [gif, setGif] =
+    useState<{ images: { fixed_height: { url: string } } }>();
+  const [toggleState, setToggleState] = useState(false);
 
   useEffect(() => {
     if (session?.user) {
@@ -23,7 +29,28 @@ const Home: NextPage = () => {
     }
   }, [session]);
 
+  const getImage = async () => {
+    setToggleState(true);
+    const giphy = {
+      baseURL: "https://api.giphy.com/v1/gifs/",
+      apiKey: "0UTRbFtkMxAplrohufYco5IY74U8hOes",
+      tag: "fail",
+      type: "random",
+      rating: "pg",
+    };
+    await axios
+      .get(
+        `https://api.giphy.com/v1/gifs/${giphy.type}?api_key=${giphy.apiKey}&tag=${giphy.tag}&type=${giphy.type}`
+      )
+      .then((gif) => {
+        console.log("GIF", gif.data.data);
+        setGif(gif.data.data);
+      });
+  };
+
   const toggle = () => {
+    setToggleState(false);
+    setGif(undefined);
     if (dbUser) {
       axios
         .post("/api/user/update-coin", {
@@ -44,26 +71,36 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to{" "}
-          <span
-            style={{
-              color: "#f5d8dd",
-            }}
-          >
-            Toggle
-          </span>
-        </h1>
         {session?.user && (
-          <div>
-            <span>
-              Logged in as {session.user.email} with {dbUser?.coins}
-            </span>
-            <button onClick={() => signOut()}>Sign out</button>
-            <button onClick={() => toggle()}>TOGGLE</button>
+          <div className={styles.flexColStnd}>
+            {gif && (
+              <div>
+                <img src={gif.images.fixed_height.url} alt="Gif" />
+              </div>
+            )}
+            <span>{dbUser?.coins} coins</span>
+            <TheToggle
+              checked={toggleState}
+              handleCheck={getImage}
+              handleComplete={toggle}
+              toggleTime={15000}
+            />
           </div>
         )}
-        {!session && <button onClick={() => signIn()}>Sign in</button>}
+        {!session && (
+          <div className={styles.imageContainer}>
+            <Image
+              src={"/togglelogo.svg"}
+              width={256}
+              height={128}
+              layout={"responsive"}
+              alt="Toggle Logo image"
+            />
+            <button onClick={() => signIn()} className={btnStyles.button}>
+              Sign in
+            </button>
+          </div>
+        )}
       </main>
     </div>
   );
