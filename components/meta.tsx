@@ -3,6 +3,9 @@
 const MetaTags = () => {
   return (
     <>
+      <meta name="theme-color" content="#fc5277" />
+      <meta name="apple-mobile-web-app-status-bar" content="#90cdf4" />
+
       <meta
         name="description"
         content="Generate Toggle Coins as you cycle through images and videos! Will you generate enough for maybe some Toggle Swag?!?!"
