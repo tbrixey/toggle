@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "short_name": "",
+  "name": "Toggle",
+  "short_name": "Toggle",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -15,5 +15,6 @@
   ],
   "theme_color": "#fc5277",
   "background_color": "#fc5277",
-  "display": "standalone"
+  "display": "standalone",
+  "scope": "/"
 }
