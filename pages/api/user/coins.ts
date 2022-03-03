@@ -26,6 +26,7 @@ export default async function handler(
           coins: 0,
           email: email,
           name: name,
+          categories: {},
         },
       });
 
