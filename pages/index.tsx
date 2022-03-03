@@ -15,7 +15,8 @@ import { isMobile } from "react-device-detect";
 const Home: NextPage = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const seconds = useRef(8);
-  const gifCounts = useRef<{ url: string; likes: number; dislikes: number }>();
+  const [gifCounts, setGifCounts] =
+    useState<{ url: string; likes: number; dislikes: number }>();
   const { data: session } = useSession();
   const [dbUser, setDbUser] =
     useState<{ coins: number; email: string; categories: any }>();
@@ -57,7 +58,7 @@ const Home: NextPage = () => {
             url: gif.data.data.images.fixed_height.url,
           })
           .then((gifCount) => {
-            gifCounts.current = gifCount.data;
+            setGifCounts(gifCount.data);
             setGif(gif.data.data);
           });
       });
@@ -83,7 +84,7 @@ const Home: NextPage = () => {
         url: gif?.images.fixed_height.url,
       })
       .then((res) => {
-        gifCounts.current = res.data;
+        setGifCounts(res.data);
       });
   };
 
@@ -93,7 +94,7 @@ const Home: NextPage = () => {
         url: gif?.images.fixed_height.url,
       })
       .then((res) => {
-        gifCounts.current = res.data;
+        setGifCounts(res.data);
       });
   };
 
@@ -130,11 +131,9 @@ const Home: NextPage = () => {
             {gif && (
               <div>
                 <div className={styles.likeDislikeContainer}>
-                  <span onClick={likeGif}>
-                    ({gifCounts?.current?.likes || 0}) like
-                  </span>
+                  <span onClick={likeGif}>({gifCounts?.likes || 0}) like</span>
                   <span onClick={dislikeGif}>
-                    ({gifCounts?.current?.dislikes || 0}) dislike
+                    ({gifCounts?.dislikes || 0}) dislike
                   </span>
                 </div>
                 <img
