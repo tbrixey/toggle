@@ -10,6 +10,7 @@ import Image from "next/image";
 import TheToggle from "../components/theToggle";
 import { NewCategory } from "../components/newCategory";
 import { categoryDBList } from "../lib/categories";
+import { isMobile } from "react-device-detect";
 
 const Home: NextPage = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -18,7 +19,9 @@ const Home: NextPage = () => {
   const { data: session } = useSession();
   const [dbUser, setDbUser] =
     useState<{ coins: number; email: string; categories: any }>();
-  const [gif, setGif] = useState<{ images: { downsized: { url: string } } }>();
+  const [gif, setGif] = useState<{
+    images: { fixed_height: { url: string }; downsized: { url: string } };
+  }>();
   const [toggleState, setToggleState] = useState(false);
   const [enabledCategory, setEnabledCategory] = useState("funny");
 
@@ -77,7 +80,7 @@ const Home: NextPage = () => {
   const likeGif = () => {
     axios
       .post("/api/gif/update-like", {
-        url: gif?.images.downsized.url,
+        url: gif?.images.fixed_height.url,
       })
       .then((res) => {
         gifCounts.current = res.data;
@@ -87,7 +90,7 @@ const Home: NextPage = () => {
   const dislikeGif = () => {
     axios
       .post("/api/gif/update-dislike", {
-        url: gif?.images.downsized.url,
+        url: gif?.images.fixed_height.url,
       })
       .then((res) => {
         gifCounts.current = res.data;
@@ -134,7 +137,14 @@ const Home: NextPage = () => {
                     ({gifCounts?.current?.dislikes || 0}) dislike
                   </span>
                 </div>
-                <img src={gif.images.downsized.url} alt="Gif" />
+                <img
+                  src={
+                    isMobile
+                      ? gif.images.fixed_height.url
+                      : gif.images.downsized.url
+                  }
+                  alt="Gif"
+                />
               </div>
             )}
             <span>{dbUser?.coins} coins</span>
@@ -195,7 +205,7 @@ const Home: NextPage = () => {
               controls
               ref={audioRef}
               src={"/rick.mp3"}
-              style={{ width: "100%", top: 50, position: "relative" }}
+              style={{ width: "90%", top: 50, position: "relative" }}
             />
           </div>
         )}
