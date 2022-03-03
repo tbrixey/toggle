@@ -23,10 +23,6 @@ const Home: NextPage = () => {
   const [enabledCategory, setEnabledCategory] = useState("funny");
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = 0.25;
-      audioRef.current.play();
-    }
     if (session?.user) {
       axios
         .post("/api/user/coins", {
@@ -195,7 +191,12 @@ const Home: NextPage = () => {
             <button onClick={() => signIn()} className={btnStyles.button}>
               Sign in
             </button>
-            <audio ref={audioRef} src={"/rick.mp3"} />
+            <audio
+              controls
+              ref={audioRef}
+              src={"/rick.mp3"}
+              style={{ width: "100%", top: 50, position: "relative" }}
+            />
           </div>
         )}
       </main>
