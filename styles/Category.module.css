@@ -1,0 +1,16 @@
+.category {
+  cursor: pointer;
+  padding: 0.5em;
+  margin: 0.5em;
+  background: #fc5277;
+  border-radius: 16px;
+}
+
+.categoryEnabled {
+  color: white;
+}
+
+.disabled {
+  color: #5e5f56;
+  pointer-events: none;
+}

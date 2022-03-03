@@ -4,18 +4,22 @@ import styles from "../styles/Home.module.css";
 import btnStyles from "../styles/Button.module.css";
 import MetaTags from "../components/meta";
 import axios from "axios";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import TheToggle from "../components/theToggle";
+import { NewCategory } from "../components/newCategory";
+import { categoryDBList } from "../lib/categories";
 
 const Home: NextPage = () => {
   const seconds = useRef(8);
+  const gifCounts = useRef<{ url: string; likes: number; dislikes: number }>();
   const { data: session } = useSession();
-  const [dbUser, setDbUser] = useState<{ coins: number; email: string }>();
-  const [gif, setGif] =
-    useState<{ images: { fixed_height: { url: string } } }>();
+  const [dbUser, setDbUser] =
+    useState<{ coins: number; email: string; categories: any }>();
+  const [gif, setGif] = useState<{ images: { downsized: { url: string } } }>();
   const [toggleState, setToggleState] = useState(false);
+  const [enabledCategory, setEnabledCategory] = useState("funny");
 
   useEffect(() => {
     if (session?.user) {
@@ -41,11 +45,17 @@ const Home: NextPage = () => {
     };
     await axios
       .get(
-        `https://api.giphy.com/v1/gifs/${giphy.type}?api_key=${giphy.apiKey}&tag=${giphy.tag}&type=${giphy.type}`
+        `https://api.giphy.com/v1/gifs/${giphy.type}?api_key=${giphy.apiKey}&tag=${enabledCategory}`
       )
-      .then((gif) => {
-        console.log("GIF", gif.data.data);
-        setGif(gif.data.data);
+      .then(async (gif) => {
+        axios
+          .post("/api/gif/count", {
+            url: gif.data.data.images.fixed_height.url,
+          })
+          .then((gifCount) => {
+            gifCounts.current = gifCount.data;
+            setGif(gif.data.data);
+          });
       });
   };
 
@@ -63,6 +73,44 @@ const Home: NextPage = () => {
     }
   };
 
+  const likeGif = () => {
+    axios
+      .post("/api/gif/update-like", {
+        url: gif?.images.downsized.url,
+      })
+      .then((res) => {
+        gifCounts.current = res.data;
+      });
+  };
+
+  const dislikeGif = () => {
+    axios
+      .post("/api/gif/update-dislike", {
+        url: gif?.images.downsized.url,
+      })
+      .then((res) => {
+        gifCounts.current = res.data;
+      });
+  };
+
+  const purchaseCategory = (cost: number, categoryToPurchase: string) => {
+    if (dbUser && dbUser.coins >= cost) {
+      const newCategories = { ...dbUser?.categories, [categoryToPurchase]: 1 };
+      axios
+        .post("/api/user/purchase-category", {
+          email: dbUser?.email,
+          cost,
+          categories: newCategories,
+        })
+        .then((res) => {
+          setDbUser(res.data);
+          setEnabledCategory(categoryToPurchase);
+        });
+    } else {
+      alert("NOT ENOUGH COINS! TOGGLE BABY!");
+    }
+  };
+
   return (
     <div className={styles.container}>
       <Head>
@@ -77,7 +125,15 @@ const Home: NextPage = () => {
           <div className={styles.flexColStnd}>
             {gif && (
               <div>
-                <img src={gif.images.fixed_height.url} alt="Gif" />
+                <div className={styles.likeDislikeContainer}>
+                  <span onClick={likeGif}>
+                    ({gifCounts?.current?.likes || 0}) like
+                  </span>
+                  <span onClick={dislikeGif}>
+                    ({gifCounts?.current?.dislikes || 0}) dislike
+                  </span>
+                </div>
+                <img src={gif.images.downsized.url} alt="Gif" />
               </div>
             )}
             <span>{dbUser?.coins} coins</span>
@@ -87,6 +143,32 @@ const Home: NextPage = () => {
               handleComplete={toggle}
               toggleTime={seconds.current * 1000}
             />
+            <div className={styles.categoryContainer}>
+              {dbUser &&
+                categoryDBList &&
+                categoryDBList.map(({ category, cost }) => {
+                  let purchased = false;
+                  Object.keys(dbUser?.categories).forEach((key) => {
+                    if (key === category) purchased = true;
+                  });
+                  return (
+                    <NewCategory
+                      key={category}
+                      category={category}
+                      cost={purchased ? 0 : cost}
+                      enabled={category === enabledCategory}
+                      disabled={toggleState}
+                      onClick={() => {
+                        if (purchased) {
+                          setEnabledCategory(category);
+                        } else {
+                          purchaseCategory(cost, category);
+                        }
+                      }}
+                    />
+                  );
+                })}
+            </div>
           </div>
         )}
         {!session && (

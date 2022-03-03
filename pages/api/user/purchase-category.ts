@@ -2,37 +2,27 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../lib/prisma";
 import { getSession } from "next-auth/react";
-interface DbUser {
-  email: string;
-  coins: number;
-}
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<DbUser>
+  res: NextApiResponse
 ) {
   const session = await getSession({ req });
   if (session) {
-    const { email, name } = req.body;
-    const user = await prisma.user.findUnique({
+    const { email, cost, categories } = req.body;
+    const user = await prisma.user.update({
       where: {
         email: email,
       },
+      data: {
+        coins: {
+          increment: -cost,
+        },
+        categories,
+      },
     });
 
-    if (!user) {
-      const newUser = await prisma.user.create({
-        data: {
-          coins: 0,
-          email: email,
-          name: name,
-        },
-      });
-
-      res.status(201).send(newUser);
-    } else {
-      res.status(200).send(user);
-    }
+    res.status(200).send(user);
   } else {
     res.status(401);
   }
