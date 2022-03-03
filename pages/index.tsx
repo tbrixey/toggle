@@ -4,7 +4,7 @@ import styles from "../styles/Home.module.css";
 import btnStyles from "../styles/Button.module.css";
 import MetaTags from "../components/meta";
 import axios from "axios";
-import { useSession, signIn } from "next-auth/react";
+import { useSession, signIn, signOut } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import TheToggle from "../components/theToggle";
@@ -12,6 +12,7 @@ import { NewCategory } from "../components/newCategory";
 import { categoryDBList } from "../lib/categories";
 
 const Home: NextPage = () => {
+  const audioRef = useRef<HTMLAudioElement>(null);
   const seconds = useRef(8);
   const gifCounts = useRef<{ url: string; likes: number; dislikes: number }>();
   const { data: session } = useSession();
@@ -22,6 +23,10 @@ const Home: NextPage = () => {
   const [enabledCategory, setEnabledCategory] = useState("funny");
 
   useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.25;
+      audioRef.current.play();
+    }
     if (session?.user) {
       axios
         .post("/api/user/coins", {
@@ -169,6 +174,13 @@ const Home: NextPage = () => {
                   );
                 })}
             </div>
+            <button
+              onClick={() => signOut()}
+              className={btnStyles.button}
+              style={{ bottom: 20, position: "absolute" }}
+            >
+              Sign Out
+            </button>
           </div>
         )}
         {!session && (
@@ -183,6 +195,7 @@ const Home: NextPage = () => {
             <button onClick={() => signIn()} className={btnStyles.button}>
               Sign in
             </button>
+            <audio ref={audioRef} src={"/rick.mp3"} />
           </div>
         )}
       </main>
