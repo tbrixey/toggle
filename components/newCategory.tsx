@@ -22,7 +22,7 @@ export const NewCategory = ({
       }`}
       onClick={onClick}
     >
-      {category} - {cost}
+      {cost > 0 ? `${category} - ${cost}` : `${category}`}
     </div>
   );
 };
