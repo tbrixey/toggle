@@ -11,12 +11,11 @@ import TheToggle from "../components/theToggle";
 import { NewCategory } from "../components/newCategory";
 import { categoryDBList } from "../lib/categories";
 import { isMobile } from "react-device-detect";
+import { LikeDislikeButtons } from "../components/likeDislikeButtons";
 
 const Home: NextPage = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const seconds = useRef(8);
-  const [gifCounts, setGifCounts] =
-    useState<{ url: string; likes: number; dislikes: number }>();
   const { data: session } = useSession();
   const [dbUser, setDbUser] =
     useState<{ coins: number; email: string; categories: any }>();
@@ -52,15 +51,8 @@ const Home: NextPage = () => {
       .get(
         `https://api.giphy.com/v1/gifs/${giphy.type}?api_key=${giphy.apiKey}&tag=${enabledCategory}`
       )
-      .then(async (gif) => {
-        axios
-          .post("/api/gif/count", {
-            url: gif.data.data.images.fixed_height.url,
-          })
-          .then((gifCount) => {
-            setGifCounts(gifCount.data);
-            setGif(gif.data.data);
-          });
+      .then((gif) => {
+        setGif(gif.data.data);
       });
   };
 
@@ -76,26 +68,6 @@ const Home: NextPage = () => {
           setDbUser(res.data);
         });
     }
-  };
-
-  const likeGif = () => {
-    axios
-      .post("/api/gif/update-like", {
-        url: gif?.images.fixed_height.url,
-      })
-      .then((res) => {
-        setGifCounts(res.data);
-      });
-  };
-
-  const dislikeGif = () => {
-    axios
-      .post("/api/gif/update-dislike", {
-        url: gif?.images.fixed_height.url,
-      })
-      .then((res) => {
-        setGifCounts(res.data);
-      });
   };
 
   const purchaseCategory = (cost: number, categoryToPurchase: string) => {
@@ -130,12 +102,7 @@ const Home: NextPage = () => {
           <div className={styles.flexColStnd}>
             {gif && (
               <div>
-                <div className={styles.likeDislikeContainer}>
-                  <span onClick={likeGif}>({gifCounts?.likes || 0}) like</span>
-                  <span onClick={dislikeGif}>
-                    ({gifCounts?.dislikes || 0}) dislike
-                  </span>
-                </div>
+                <LikeDislikeButtons gif={gif} />
                 <img
                   src={
                     isMobile

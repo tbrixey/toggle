@@ -1,0 +1,21 @@
+.likeDislikeContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+.likeDislikeContainer > span {
+  margin-right: 8px;
+  cursor: pointer;
+  padding: 0.5em 0.75em;
+  background: white;
+  color: black;
+  border-radius: 1em;
+  transform: rotate(-5deg);
+}
+
+.likeDislikeContainer > span:hover {
+  opacity: 0.9;
+}
